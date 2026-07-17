@@ -9,19 +9,38 @@
       padding: 2em;
       background-color: #f9f9f9;
     }
+
     pre {
       background-color: #eee;
       padding: 1em;
       border-radius: 5px;
       overflow-x: auto;
     }
+
     code {
       font-family: Consolas, monospace;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #0066cc;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #004f9e;
     }
   </style>
 </head>
 <body>
   <h1>Code Snippet</h1>
+
+  <button id="openChatButton">Open a chat with attributes</button>
+
   <script type="text/javascript" charset="utf-8">
     (function (g, e, n, es, ys) {
       g['_genesysJs'] = e;
@@ -30,10 +49,65 @@
       };
       g[e].t = 1 * new Date();
       g[e].c = es;
-      ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
+      ys = document.createElement('script');
+      ys.async = 1;
+      ys.src = n;
+      ys.charset = 'utf-8';
+      document.head.appendChild(ys);
     })(window, 'Genesys', 'https://apps.mypurecloud.de/genesys-bootstrap/genesys.min.js', {
       environment: 'prod-euc1',
       deploymentId: '9fbc8fc9-80a5-4d6d-b832-dc7b8779a873'
+    });
+
+    function setCustomAttributes() {
+      return new Promise(function (resolve, reject) {
+        Genesys(
+          "command",
+          "Database.set",
+          {
+            messaging: {
+              customAttributes: {
+                customerName: "John Doe",
+                customerEmail: "john.doe@example.com",
+                customerId: "123456",
+                source: "Private Web Portal",
+                authenticatedUser: "true"
+              }
+            }
+          },
+          function () {
+            console.log("Custom attributes set successfully");
+            resolve();
+          },
+          function (error) {
+            console.error("Error setting custom attributes", error);
+            reject(error);
+          }
+        );
+      });
+    }
+
+    function openMessenger() {
+      Genesys(
+        "command",
+        "Messenger.open",
+        {},
+        function () {
+          console.log("Messenger opened successfully");
+        },
+        function (error) {
+          console.error("Error opening Messenger", error);
+        }
+      );
+    }
+
+    document.getElementById("openChatButton").addEventListener("click", async function () {
+      try {
+        await setCustomAttributes();
+        openMessenger();
+      } catch (error) {
+        console.error("Could not open chat because custom attributes failed", error);
+      }
     });
   </script>
 </body>
