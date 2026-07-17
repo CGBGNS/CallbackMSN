@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Code Snippet</title>
+  <title>Genesys Web Messaging Test</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,42 +11,42 @@
       background-color: #f9f9f9;
     }
 
-    pre {
-      background-color: #eee;
-      padding: 1em;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-
-    code {
-      font-family: Consolas, monospace;
-    }
-
-    button {
-      padding: 12px 20px;
+    #openChatButton {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      z-index: 999999;
+      padding: 14px 24px;
       font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background-color: #0066cc;
       color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
 
-    button:hover {
+    #openChatButton:hover {
       background-color: #004f9e;
     }
   </style>
 </head>
-<body>
-  <h1>Code Snippet</h1>
 
-  <button id="openChatButton">Open a chat with attributes</button>
+<body>
+  <h1>Genesys Web Messaging Test</h1>
+
+  <p>This is a test page for Genesys Web Messaging.</p>
+
+  <button id="openChatButton">
+    Open a chat with attributes
+  </button>
 
   <script type="text/javascript" charset="utf-8">
     (function (g, e, n, es, ys) {
       g['_genesysJs'] = e;
       g[e] = g[e] || function () {
-        (g[e].q = g[e].q || []).push(arguments)
+        (g[e].q = g[e].q || []).push(arguments);
       };
       g[e].t = 1 * new Date();
       g[e].c = es;
@@ -102,6 +103,8 @@
     }
 
     document.getElementById("openChatButton").addEventListener("click", async function () {
+      console.log("Open chat button clicked");
+
       try {
         await setCustomAttributes();
         openMessenger();
