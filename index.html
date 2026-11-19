@@ -1,15 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Genesys Web Messaging Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Genesys Web Messaging · Banco de pruebas</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2em;
-      background-color: #f9f9f9;
+    :root {
+      --ink: #1d2733;
+      --muted: #5b6878;
+      --line: #d5dce4;
+      --paper: #ffffff;
+      --ground: #eef2f6;
+      --accent: #0a5cb8;
+      --accent-ink: #ffffff;
+      --ok: #1f7a4d;
+      --warn: #a15c00;
+      --err: #b3261e;
+      --radius-s: 4px;
+      --radius-m: 8px;
     }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink);
+      background: var(--ground);
+    }
+
+    header {
+      padding: 28px 32px 20px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+    header h1 { margin: 0 0 4px; font-size: 24px; font-weight: 600; }
+    header p  { margin: 0; color: var(--muted); max-width: 70ch; }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      padding: 24px 32px 120px;
+      max-width: 1280px;
+    }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; padding: 16px 16px 120px; }
+      header { padding: 20px 16px 16px; }
+    }
+
+    section.panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-m);
+      padding: 20px;
+    }
+    section.panel h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+    section.panel > p.hint { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+
+    .wide { grid-column: 1 / -1; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 0 6px 6px 0;
+    }
+    td { padding: 3px 6px 3px 0; vertical-align: middle; }
+    td.actions { width: 1%; white-space: nowrap; }
+
+    input[type="text"], input[type="url"], select {
+      width: 100%;
+      font: inherit;
+      font-size: 14px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      background: #fff;
+      color: var(--ink);
+    }
+    input.invalid { border-color: var(--err); background: #fdf1f0; }
+
+    button {
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: var(--radius-s);
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      padding: 7px 12px;
+    }
+    button:hover { background: #f3f6f9; }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-ink);
+      font-weight: 600;
+    }
+    button.primary:hover { background: #084a94; }
+    button.icon { padding: 6px 10px; color: var(--err); }
+    :focus-visible { outline: 3px solid #7fb2ee; outline-offset: 1px; }
+
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .row label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+
+    details { margin-top: 14px; }
+    summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+    pre {
+      margin: 8px 0 0;
+      padding: 12px;
+      background: #f5f7fa;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      font-size: 13px;
+      overflow-x: auto;
+    }
+
+    .status { font-size: 14px; color: var(--muted); margin-left: auto; }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+
+    /* Lo que el cliente ha pulsado: el elemento protagonista de la página */
+    #capture {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius-m);
+      padding: 18px 20px;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    #capture.empty { color: var(--muted); }
+    #capture.hit { border-style: solid; border-color: var(--accent); background: #f2f7fd; }
+    #capture .said { font-size: 28px; font-weight: 600; line-height: 1.2; margin: 2px 0 6px; word-break: break-word; }
+    #capture .meta { font-size: 14px; color: var(--muted); }
+    #capture .go { font-size: 14px; margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    #capture .go a { color: var(--accent); word-break: break-all; }
+
+    #offered { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    #offered span {
+      font-size: 13px;
+      padding: 3px 10px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 999px;
+    }
+
+    #log {
+      max-height: 260px;
+      overflow: auto;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12.5px;
+      background: #f5f7fa;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      padding: 8px 10px;
+    }
+    #log div { padding: 2px 0; border-bottom: 1px solid #e7ebf0; }
+    #log .t { color: var(--muted); margin-right: 6px; }
+    #log .warn { color: var(--warn); }
+    #log .err { color: var(--err); }
+
+    /* Secciones de demostración para redirecciones internas (#ancla) */
+    .demo-section { scroll-margin-top: 16px; }
+    .demo-section:target { outline: 3px solid var(--accent); }
 
     #openChatButton {
       position: fixed;
@@ -26,21 +186,112 @@
       color: white;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     }
-
-    #openChatButton:hover {
-      background-color: #004f9e;
-    }
+    #openChatButton:hover { background-color: #004f9e; }
   </style>
 </head>
 
 <body>
-  <h1>Genesys Web Messaging Test</h1>
+  <header>
+    <h1>Genesys Web Messaging · Banco de pruebas</h1>
+    <p>Define los atributos que se envían al abrir el chat y a qué página va el cliente según el quick reply que pulse.</p>
+  </header>
 
-  <p>This is a test page for Genesys Web Messaging.</p>
+  <main>
+    <!-- ============ 1. Atributos personalizados ============ -->
+    <section class="panel">
+      <h2>Atributos del chat</h2>
+      <p class="hint">Se envían con <code>Database.set</code> antes de abrir el Messenger. Llegan a Architect como variables de participante.</p>
 
-  <button id="openChatButton">
-    Open a chat with attributes
-  </button>
+      <table>
+        <thead>
+          <tr><th>Nombre</th><th>Valor</th><th></th></tr>
+        </thead>
+        <tbody id="attrBody"></tbody>
+      </table>
+
+      <div class="row">
+        <button type="button" id="addAttr">Añadir atributo</button>
+        <button type="button" id="resetAttr">Restablecer valores de ejemplo</button>
+        <button type="button" id="updateAttr">Actualizar atributos sin abrir</button>
+        <span class="status" id="attrStatus"></span>
+      </div>
+
+      <details>
+        <summary>Ver lo que se enviará</summary>
+        <pre id="attrPreview"></pre>
+      </details>
+    </section>
+
+    <!-- ============ 2. Quick reply → destino ============ -->
+    <section class="panel">
+      <h2>Redirecciones por quick reply</h2>
+      <p class="hint">Si el texto (o el payload) del quick reply coincide, se lleva al cliente al destino. Usa una URL completa o un ancla de esta página, como <code>#mispagos</code>. No distingue mayúsculas ni tildes.</p>
+
+      <table>
+        <thead>
+          <tr><th>Texto del quick reply</th><th>Destino</th><th></th></tr>
+        </thead>
+        <tbody id="routeBody"></tbody>
+      </table>
+
+      <div class="row">
+        <button type="button" id="addRoute">Añadir redirección</button>
+      </div>
+
+      <div class="row">
+        <label><input type="checkbox" id="autoRedirect" checked> Redirigir automáticamente</label>
+        <label>tras
+          <select id="delay" style="width:auto">
+            <option value="0">0 s</option>
+            <option value="2">2 s</option>
+            <option value="3" selected>3 s</option>
+            <option value="5">5 s</option>
+          </select>
+        </label>
+        <label>en
+          <select id="target" style="width:auto">
+            <option value="_self" selected>esta pestaña</option>
+            <option value="_blank">pestaña nueva</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="matchTyped"> También si el cliente lo escribe</label>
+      </div>
+    </section>
+
+    <!-- ============ 3. Captura ============ -->
+    <section class="panel wide">
+      <h2>Lo que ha pulsado el cliente</h2>
+      <p class="hint">Se actualiza en cuanto el cliente pulsa un quick reply en el widget.</p>
+
+      <div id="capture" class="empty">Todavía no se ha capturado ninguna pulsación. Abre el chat y elige una opción del menú.</div>
+
+      <div id="offeredWrap" hidden>
+        <p class="hint" style="margin:14px 0 0">Opciones que el bot acaba de mostrar:</p>
+        <div id="offered"></div>
+      </div>
+
+      <details open>
+        <summary>Registro de eventos</summary>
+        <div class="row" style="margin-top:8px">
+          <label><input type="checkbox" id="rawLog"> Mostrar el mensaje completo (JSON)</label>
+          <button type="button" id="clearLog">Vaciar registro</button>
+        </div>
+        <div id="log" aria-live="polite"></div>
+      </details>
+    </section>
+
+    <!-- ============ Secciones de demostración ============ -->
+    <section class="panel demo-section" id="mispagos">
+      <h2>Mis pagos</h2>
+      <p class="hint">Sección de ejemplo. El quick reply “Mis Pagos” con destino <code>#mispagos</code> trae al cliente hasta aquí.</p>
+    </section>
+    <section class="panel demo-section" id="misfacturas">
+      <h2>Mis facturas</h2>
+      <p class="hint">Otra sección de ejemplo, para el destino <code>#misfacturas</code>.</p>
+    </section>
+  </main>
+
+  <button id="openChatButton">Abrir chat con estos atributos</button>
 
   <script type="text/javascript" charset="utf-8">
     (function (g, e, n, es, ys) {
@@ -59,31 +310,175 @@
       environment: 'prod-euc1',
       deploymentId: 'd8e8dbf0-3461-4fc1-bebe-5b95400811f8'
     });
+  </script>
 
+  <script>
+  (function () {
+    "use strict";
+
+    /* ------------------------------------------------------------------
+     * Valores de ejemplo (solo para rellenar el formulario la primera vez)
+     * ------------------------------------------------------------------ */
+    const DEFAULT_ATTRIBUTES = [
+      ["customerName", "John Doe"],
+      ["customerEmail", "john.doe@example.com"],
+      ["custom_numinst_owa", "2139375"],
+      ["source", "Private Web Portal"],
+      ["authenticatedUser", "true"],
+      ["custom_country_code_iso", "TST"],
+      ["custom_lang_code_iso", "fr"]
+    ];
+
+    // Cambia "https://xxxx" por tu dominio real.
+    const DEFAULT_ROUTES = [
+      ["Mis Pagos", "https://xxxx/mispagos"],
+      ["Mis Facturas", "#misfacturas"]
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    /* ------------------------------------------------------------------
+     * Utilidades
+     * ------------------------------------------------------------------ */
+    function normalize(s) {
+      return String(s || "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita tildes
+        .toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    function log(text, level) {
+      const box = $("log");
+      const line = document.createElement("div");
+      const time = new Date().toLocaleTimeString();
+      line.innerHTML = '<span class="t">' + time + '</span>' +
+        '<span class="' + (level || "") + '">' + escapeHtml(text) + '</span>';
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+      (level === "err" ? console.error : console.log)("[WebMessaging] " + text);
+    }
+
+    function setStatus(text, kind) {
+      const el = $("attrStatus");
+      el.textContent = text;
+      el.className = "status " + (kind || "");
+    }
+
+    /* ------------------------------------------------------------------
+     * Tablas editables (atributos y redirecciones)
+     * ------------------------------------------------------------------ */
+    function addRow(tbodyId, key, value, placeholders, onChange) {
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td><input type="text" class="k"></td>' +
+        '<td><input type="text" class="v"></td>' +
+        '<td class="actions"><button type="button" class="icon" aria-label="Eliminar fila">✕</button></td>';
+      const k = tr.querySelector(".k");
+      const v = tr.querySelector(".v");
+      k.value = key || "";
+      v.value = value || "";
+      k.placeholder = placeholders[0];
+      v.placeholder = placeholders[1];
+      k.addEventListener("input", onChange);
+      v.addEventListener("input", onChange);
+      tr.querySelector("button").addEventListener("click", () => { tr.remove(); onChange(); });
+      $(tbodyId).appendChild(tr);
+      onChange();
+      return k;
+    }
+
+    function readRows(tbodyId) {
+      return Array.from($(tbodyId).querySelectorAll("tr")).map((tr) => ({
+        k: tr.querySelector(".k"),
+        v: tr.querySelector(".v")
+      }));
+    }
+
+    /* ---------- Atributos ---------- */
+    const ATTR_PH = ["p. ej. customerName", "valor"];
+
+    function collectAttributes() {
+      const attrs = {};
+      const seen = new Set();
+      let valid = true;
+
+      readRows("attrBody").forEach(({ k, v }) => {
+        const key = k.value.trim();
+        k.classList.remove("invalid");
+        if (!key && !v.value.trim()) return;        // fila vacía: se ignora
+        // Genesys solo admite letras, números y "_" en el nombre del atributo
+        if (!/^[A-Za-z0-9_]+$/.test(key) || seen.has(key)) {
+          k.classList.add("invalid");
+          valid = false;
+          return;
+        }
+        seen.add(key);
+        attrs[key] = v.value;                        // siempre como texto
+      });
+
+      return { attrs, valid };
+    }
+
+    function refreshAttrPreview() {
+      const { attrs, valid } = collectAttributes();
+      $("attrPreview").textContent = JSON.stringify({ messaging: { customAttributes: attrs } }, null, 2);
+      if (!valid) setStatus("Revisa los nombres marcados: solo letras, números y _, sin repetir.", "err");
+      else setStatus("");
+    }
+
+    function loadDefaultAttributes() {
+      $("attrBody").innerHTML = "";
+      DEFAULT_ATTRIBUTES.forEach(([k, v]) => addRow("attrBody", k, v, ATTR_PH, refreshAttrPreview));
+    }
+
+    $("addAttr").addEventListener("click", () => addRow("attrBody", "", "", ATTR_PH, refreshAttrPreview).focus());
+    $("resetAttr").addEventListener("click", loadDefaultAttributes);
+
+    /* ---------- Redirecciones ---------- */
+    const ROUTE_PH = ["p. ej. Mis Pagos", "https://… o #seccion"];
+    function noop() {}
+
+    function findRoute(texts) {
+      const wanted = texts.filter(Boolean).map(normalize);
+      for (const { k, v } of readRows("routeBody")) {
+        if (wanted.includes(normalize(k.value)) && v.value.trim()) {
+          return { label: k.value.trim(), url: v.value.trim() };
+        }
+      }
+      return null;
+    }
+
+    function routeExists(text) {
+      const n = normalize(text);
+      return readRows("routeBody").some(({ k }) => normalize(k.value) === n);
+    }
+
+    DEFAULT_ROUTES.forEach(([k, v]) => addRow("routeBody", k, v, ROUTE_PH, noop));
+    $("addRoute").addEventListener("click", () => addRow("routeBody", "", "", ROUTE_PH, noop).focus());
+
+    /* ------------------------------------------------------------------
+     * Genesys: atributos y apertura del Messenger
+     * ------------------------------------------------------------------ */
     function setCustomAttributes() {
+      const { attrs, valid } = collectAttributes();
+      if (!valid) return Promise.reject(new Error("Hay nombres de atributo no válidos o repetidos"));
+
       return new Promise(function (resolve, reject) {
-        Genesys(
-          "command",
-          "Database.set",
-          {
-            messaging: {
-              customAttributes: {
-                customerName: "John Doe",
-                customerEmail: "john.doe@example.com",
-                custom_numinst_owa: "2139375",
-                source: "Private Web Portal",
-                authenticatedUser: "true",
-                custom_country_code_iso : "TST",
-                custom_lang_code_iso : "fr"
-              }
-            }
-          },
+        Genesys("command", "Database.set",
+          { messaging: { customAttributes: attrs } },
           function () {
-            console.log("Custom attributes set successfully");
+            log("Atributos enviados: " + JSON.stringify(attrs));
+            setStatus("Atributos enviados", "ok");
             resolve();
           },
           function (error) {
-            console.error("Error setting custom attributes", error);
+            log("Error al enviar los atributos: " + JSON.stringify(error), "err");
+            setStatus("Error al enviar los atributos", "err");
             reject(error);
           }
         );
@@ -91,29 +486,195 @@
     }
 
     function openMessenger() {
-      Genesys(
-        "command",
-        "Messenger.open",
-        {},
-        function () {
-          console.log("Messenger opened successfully");
-        },
-        function (error) {
-          console.error("Error opening Messenger", error);
-        }
+      Genesys("command", "Messenger.open", {},
+        function () { log("Messenger abierto"); },
+        function (error) { log("Messenger.open: " + JSON.stringify(error), "warn"); } // p. ej. ya estaba abierto
       );
     }
 
-    document.getElementById("openChatButton").addEventListener("click", async function () {
-      console.log("Open chat button clicked");
-
+    $("openChatButton").addEventListener("click", async function () {
       try {
         await setCustomAttributes();
         openMessenger();
       } catch (error) {
-        console.error("Could not open chat because custom attributes failed", error);
+        log("No se abre el chat: " + (error && error.message ? error.message : JSON.stringify(error)), "err");
       }
     });
+
+    $("updateAttr").addEventListener("click", () => setCustomAttributes().catch(() => {}));
+
+    /* ------------------------------------------------------------------
+     * Captura de quick replies
+     *
+     * El Messenger va en un iframe de otro dominio, así que no se pueden
+     * escuchar los clics directamente. Se usa el evento
+     * MessagingService.messagesReceived, que publica tanto los mensajes del
+     * bot/agente (Outbound) como los del propio cliente (Inbound).
+     *
+     *  - Outbound con content[].contentType === "QuickReply"  → menú ofrecido
+     *  - Inbound  con content[].contentType === "ButtonResponse" → pulsación
+     * ------------------------------------------------------------------ */
+    function getMessages(payload) {
+      const data = payload && (payload.data !== undefined ? payload.data : payload);
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data.messages)) return data.messages;
+      if (data.message) return [data.message];
+      return [data];
+    }
+
+    function contentsOf(msg) {
+      return Array.isArray(msg.content) ? msg.content : [];
+    }
+
+    function extractClick(msg) {
+      if (normalize(msg.direction) !== "inbound") return null;
+
+      for (const c of contentsOf(msg)) {
+        if (c && c.contentType === "ButtonResponse" && c.buttonResponse) {
+          return {
+            kind: c.buttonResponse.type || "QuickReply",
+            text: c.buttonResponse.text || msg.text || "",
+            payload: c.buttonResponse.payload || ""
+          };
+        }
+      }
+      if (msg.text) return { kind: "Texto escrito", text: msg.text, payload: "" };
+      return null;
+    }
+
+    function extractOffered(msg) {
+      if (normalize(msg.direction) !== "outbound") return [];
+      return contentsOf(msg)
+        .filter((c) => c && c.contentType === "QuickReply" && c.quickReply)
+        .map((c) => c.quickReply.text || c.quickReply.payload)
+        .filter(Boolean);
+    }
+
+    let pendingTimer = null;
+    let lastMessageId = null;
+
+    function cancelPending() {
+      if (pendingTimer) { clearInterval(pendingTimer); pendingTimer = null; }
+    }
+
+    function showCapture(click, route) {
+      cancelPending();
+      const box = $("capture");
+      box.className = "hit";
+
+      let html =
+        '<div class="meta">' + escapeHtml(click.kind) +
+        (click.payload && click.payload !== click.text ? ' · payload: ' + escapeHtml(click.payload) : '') + '</div>' +
+        '<div class="said">' + escapeHtml(click.text) + '</div>';
+
+      if (!route) {
+        html += '<div class="go">No hay ninguna redirección configurada para este texto.</div>';
+        box.innerHTML = html;
+        return;
+      }
+
+      html += '<div class="go">Destino: <a href="' + escapeHtml(route.url) + '" id="goLink">' +
+              escapeHtml(route.url) + '</a> <span id="countdown"></span></div>';
+      box.innerHTML = html;
+
+      // El enlace también sirve como redirección manual
+      $("goLink").addEventListener("click", (ev) => { ev.preventDefault(); cancelPending(); go(route.url, true); });
+
+      if (!$("autoRedirect").checked) {
+        $("countdown").textContent = "(redirección automática desactivada: pulsa el enlace)";
+        return;
+      }
+
+      let secs = parseInt($("delay").value, 10) || 0;
+      if (secs === 0) { go(route.url, false); return; }
+
+      const cd = $("countdown");
+      cd.innerHTML = 'Redirigiendo en <b>' + secs + '</b> s <button type="button" id="cancelGo">Cancelar</button>';
+      $("cancelGo").addEventListener("click", () => { cancelPending(); cd.textContent = "(redirección cancelada)"; });
+
+      pendingTimer = setInterval(() => {
+        secs -= 1;
+        if (secs <= 0) { cancelPending(); go(route.url, false); }
+        else cd.querySelector("b").textContent = secs;
+      }, 1000);
+    }
+
+    function go(url, fromUserClick) {
+      log("Redirigiendo a " + url);
+
+      // Ancla de esta misma página: solo desplazar
+      if (url.startsWith("#")) {
+        const el = document.getElementById(url.slice(1));
+        if (el) { location.hash = url; el.scrollIntoView({ behavior: "smooth" }); }
+        else log("No existe ninguna sección con id \"" + url.slice(1) + "\" en esta página", "warn");
+        return;
+      }
+
+      const target = $("target").value;
+      if (target === "_blank") {
+        const w = window.open(url, "_blank", "noopener");
+        // Fuera de un clic del usuario el navegador puede bloquear la pestaña nueva
+        if (!w && !fromUserClick) log("El navegador ha bloqueado la pestaña nueva. Pulsa el enlace de destino.", "warn");
+      } else {
+        window.location.href = url;
+      }
+    }
+
+    function handleMessage(msg) {
+      if (!msg || typeof msg !== "object") return;
+      if (msg.id && msg.id === lastMessageId) return;   // evita duplicados
+      if (msg.id) lastMessageId = msg.id;
+
+      if ($("rawLog").checked) log("Mensaje: " + JSON.stringify(msg));
+
+      const offered = extractOffered(msg);
+      if (offered.length) {
+        log("El bot ofrece: " + offered.join(" | "));
+        $("offeredWrap").hidden = false;
+        $("offered").innerHTML = offered.map((t) =>
+          '<span>' + escapeHtml(t) + (routeExists(t) ? '' : ' (sin destino)') + '</span>').join("");
+        // Añade a la tabla las opciones nuevas para que solo falte poner la URL
+        offered.forEach((t) => { if (!routeExists(t)) addRow("routeBody", t, "", ROUTE_PH, noop); });
+        return;
+      }
+
+      const click = extractClick(msg);
+      if (!click) return;
+
+      const isTyped = click.kind === "Texto escrito";
+      log((isTyped ? "Cliente escribe: " : "Cliente pulsa: ") + click.text +
+          (click.payload ? " (payload: " + click.payload + ")" : ""));
+
+      if (isTyped && !$("matchTyped").checked) {
+        // Se muestra, pero no redirige
+        showCapture(click, null);
+        $("capture").querySelector(".go").textContent =
+          "Es texto escrito, no un quick reply. Activa “También si el cliente lo escribe” para redirigir.";
+        return;
+      }
+
+      showCapture(click, findRoute([click.text, click.payload]));
+    }
+
+    Genesys("subscribe", "MessagingService.ready", function () {
+      log("MessagingService listo");
+    });
+
+    Genesys("subscribe", "MessagingService.messagesReceived", function (payload) {
+      getMessages(payload).forEach(handleMessage);
+    });
+
+    Genesys("subscribe", "MessagingService.error", function (e) {
+      log("MessagingService error: " + JSON.stringify(e && e.data ? e.data : e), "err");
+    });
+
+    $("clearLog").addEventListener("click", () => { $("log").innerHTML = ""; });
+
+    /* ------------------------------------------------------------------ */
+    loadDefaultAttributes();
+    log("Página cargada. Esperando al Messenger…");
+  })();
   </script>
 </body>
 </html>
